@@ -10,8 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "mobile:build": "npm run build && node scripts/prepare-capacitor.mjs && npx cap sync android",
-    "mobile:open": "npx cap open android"
+    "mobile:build": "npm run build:mobile && node scripts/prepare-mobile.mjs && npx cap sync android",
+    "mobile:open": "npx cap open android",
+    "build:mobile": "vite build --config vite.mobile.config.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
