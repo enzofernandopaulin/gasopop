@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap, LayerGroup } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Station } from "@/hooks/useGasoPop";
@@ -25,9 +25,7 @@ function priceColor(price: number | null, cheapest: boolean, cheapCut: number) {
 }
 
 function markerIcon(L: typeof import("leaflet"), color: string, label?: string) {
-  const text = label
-    ? `<span class="gasopop-leaflet-price">${label}</span>`
-    : "";
+  const text = label ? `<span class="gasopop-leaflet-price">${label}</span>` : "";
   return L.divIcon({
     className: "gasopop-leaflet-marker-wrapper",
     html: `<div class="gasopop-leaflet-marker" style="--marker-color:${color}"><span class="gasopop-leaflet-pump">⛽</span></div>${text}`,
@@ -48,6 +46,7 @@ export default function GoogleStationMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const layersRef = useRef<LayerGroup | null>(null);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,6 +66,7 @@ export default function GoogleStationMap({
 
       layersRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
+      setMapReady(true);
       window.setTimeout(() => map.invalidateSize(), 0);
     });
 
@@ -76,7 +76,11 @@ export default function GoogleStationMap({
       layersRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
+    // The initial center is used only when creating the map; later changes
+    // are handled by the panTo effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -132,7 +136,7 @@ export default function GoogleStationMap({
         marker.addTo(layers);
       });
     });
-  }, [stations, osmStations, center.lat, center.lng, cheapestId, priceFor, onSelect]);
+  }, [mapReady, stations, osmStations, center.lat, center.lng, cheapestId, priceFor, onSelect]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
