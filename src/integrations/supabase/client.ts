@@ -3,6 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
+// Public browser configuration for the connected Gasopop Supabase project.
+// Environment variables still take precedence in managed deployments.
+const DEFAULT_SUPABASE_URL = 'https://dqwmxturwxrbhjqobizl.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_bhdleJnGg0PQw_-VowPyHw_94rmiB0q';
+
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
@@ -36,9 +41,12 @@ function getEnvironmentValue(name: string): string | undefined {
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = getEnvironmentValue('VITE_SUPABASE_URL') || getEnvironmentValue('SUPABASE_URL');
+  const SUPABASE_URL =
+    getEnvironmentValue('VITE_SUPABASE_URL') || getEnvironmentValue('SUPABASE_URL') || DEFAULT_SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY =
-    getEnvironmentValue('VITE_SUPABASE_PUBLISHABLE_KEY') || getEnvironmentValue('SUPABASE_PUBLISHABLE_KEY');
+    getEnvironmentValue('VITE_SUPABASE_PUBLISHABLE_KEY') ||
+    getEnvironmentValue('SUPABASE_PUBLISHABLE_KEY') ||
+    DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
@@ -63,9 +71,11 @@ function createSupabaseClient() {
 }
 
 export const isSupabaseConfigured = Boolean(
-  getEnvironmentValue('VITE_SUPABASE_URL') || getEnvironmentValue('SUPABASE_URL'),
+  getEnvironmentValue('VITE_SUPABASE_URL') || getEnvironmentValue('SUPABASE_URL') || DEFAULT_SUPABASE_URL,
 ) && Boolean(
-  getEnvironmentValue('VITE_SUPABASE_PUBLISHABLE_KEY') || getEnvironmentValue('SUPABASE_PUBLISHABLE_KEY'),
+  getEnvironmentValue('VITE_SUPABASE_PUBLISHABLE_KEY') ||
+    getEnvironmentValue('SUPABASE_PUBLISHABLE_KEY') ||
+    DEFAULT_SUPABASE_PUBLISHABLE_KEY,
 );
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
