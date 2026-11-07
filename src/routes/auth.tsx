@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
@@ -44,25 +44,50 @@ function AuthPage() {
     event.preventDefault();
     setLoading(true);
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error(
+          "O cadastro está temporariamente indisponível. Tente novamente em instantes.",
+        );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
       if (mode === "signup") {
+        const normalizedName = name.trim();
+        if (normalizedName.length < 2) {
+          throw new Error("Informe seu nome para criar a conta.");
+        }
+
         const { error } = await supabase.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { name },
+            data: { name: normalizedName },
           },
         });
         if (error) throw error;
-        toast.success("Conta criada! Bem-vindo ao GasoPop 🎉");
+        toast.success("Conta criada! Confira seu e-mail para confirmar o cadastro.");
+        setMode("signin");
+        setPassword("");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
         if (error) throw error;
         toast.success("Boas-vindas de volta!");
+        void navigate({ to: "/" });
       }
-      void navigate({ to: "/" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível continuar");
+      const message = error instanceof Error ? error.message : "Não foi possível continuar";
+      toast.error(
+        message.includes("User already registered")
+          ? "Já existe uma conta com este e-mail. Entre ou use outro endereço."
+          : message.includes("Invalid login credentials")
+            ? "E-mail ou senha incorretos."
+            : message,
+      );
     } finally {
       setLoading(false);
     }
