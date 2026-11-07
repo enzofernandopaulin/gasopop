@@ -224,6 +224,42 @@
   border: 0;
 }
 
+/* Leaflet station markers: no Google Maps key required. */
+.gasopop-leaflet-marker-wrapper {
+  background: transparent;
+  border: 0;
+}
+
+.gasopop-leaflet-marker {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 3px solid #0f172a;
+  border-radius: 999px 999px 999px 0;
+  background: var(--marker-color);
+  box-shadow: 0 2px 5px rgb(15 23 42 / 28%);
+  transform: rotate(-45deg);
+}
+
+.gasopop-leaflet-pump {
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1;
+  transform: rotate(45deg);
+}
+
+.gasopop-leaflet-price {
+  display: block;
+  margin-top: 2px;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: 0 0 3px white, 0 1px 5px rgb(255 255 255 / 90%);
+  white-space: nowrap;
+}
+
 /* Google Maps price labels under the pump markers */
 .gasopop-map-label {
   transform: translateY(16px);
